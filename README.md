@@ -88,7 +88,7 @@ If you're building a client and want to know what to expect:
 
 This repo is for documentation. Bug reports about the MCP server, feature requests for new tools, or questions about the API — please open an issue here and we'll triage.
 
-For Taskpile app issues (unrelated to MCP), use <https://github.com/twomasc/taskpile/issues>.
+For Taskpile app issues (unrelated to MCP), please contact us through the app at <https://taskpile.app>.
 
 ## License
 
