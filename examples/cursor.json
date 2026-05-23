@@ -1,0 +1,9 @@
+{
+  "_comment_": "Cursor supports remote MCP servers natively (no mcp-remote bridge needed). Open Cursor Settings → MCP Servers → Add new server, and paste this config. First connect prompts for OAuth in a browser.",
+  "_path_": "Cursor → Settings → MCP Servers (UI) — or ~/.cursor/mcp.json",
+  "mcpServers": {
+    "taskpile": {
+      "url": "https://taskpile.app/api/mcp"
+    }
+  }
+}

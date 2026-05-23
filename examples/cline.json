@@ -1,0 +1,10 @@
+{
+  "_comment_": "Cline (Claude in VS Code) supports remote MCP servers in its MCP marketplace. Add the entry below to its MCP settings via the Cline panel or the underlying JSON file.",
+  "_path_": "VS Code settings → Cline → MCP Servers — or the cline_mcp_settings.json shown in the panel",
+  "mcpServers": {
+    "taskpile": {
+      "url": "https://taskpile.app/api/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}

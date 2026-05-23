@@ -1,0 +1,10 @@
+{
+  "_comment_": "Add this entry to the `mcpServers` object in claude_desktop_config.json. mcp-remote bridges Claude Desktop (which speaks stdio MCP) to a remote Streamable HTTP server. The first run opens a browser for OAuth; subsequent runs reuse the cached token.",
+  "_path_": "macOS: ~/Library/Application Support/Claude/claude_desktop_config.json — Windows: %APPDATA%\\Claude\\claude_desktop_config.json",
+  "mcpServers": {
+    "taskpile": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://taskpile.app/api/mcp"]
+    }
+  }
+}

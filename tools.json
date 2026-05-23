@@ -1,0 +1,1648 @@
+[
+  {
+    "name": "create_task",
+    "description": "Create a task in the user's Taskpile inbox. Returns the new task id and shape. Tag syntax is `@tag_name`, NOT `#tag_name` - `#name` is the project shorthand and only the first `#` token in the title is used. Title may include one `#project_name` (auto-creates the project if missing) and any number of `@tag_name` tokens; both are stripped from the stored title. To set tags at creation, either use `@tag` in the title or pass the `tags: string[]` array (the two forms can be combined and are de-duplicated). Optionally pass `notes` for markdown context, and `horizon` to schedule it in one call (skips placing it in inbox).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Task title. May include one `#project` and any number of `@tag` tokens. Use `@tag`, not `#tag`, for tags."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional markdown notes / description for the task."
+        },
+        "horizon": {
+          "type": "string",
+          "enum": [
+            "today_morning",
+            "today_afternoon",
+            "today_evening",
+            "tomorrow",
+            "in_n_days",
+            "next_week",
+            "someday"
+          ],
+          "description": "Optional time horizon. If set, the task skips the inbox."
+        },
+        "inNDays": {
+          "type": "number",
+          "description": "Days offset for horizon=in_n_days (default 2)."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Explicit project id (overrides #project shorthand)."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags to attach at creation (creates new tags as needed). Equivalent to `@tag_name` shorthand in the title; both forms can be combined and are de-duplicated."
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "annotations": {
+      "title": "Create task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_tasks",
+    "description": "List the user's tasks. Status semantics: `inbox` = unsorted captures, `today` = scheduled for today, `later` = scheduled for a future date (tomorrow, in_n_days, next_week have an explicit horizon_target_date; someday has none), `delegated` = handed off (see follow_up_at), `done` = completed, `archived` = soft-deleted. Pass `statuses: string[]` to combine - e.g. ['inbox','today','later'] for everything active.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ],
+          "description": "Single status filter. Omit and use `statuses` for arrays."
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "inbox",
+              "today",
+              "later",
+              "delegated",
+              "done",
+              "archived"
+            ]
+          },
+          "description": "Array of statuses. Use this instead of `status` to fetch multiple in one call."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Max results (default 100, max 500)."
+        }
+      }
+    },
+    "annotations": {
+      "title": "List tasks",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_task",
+    "description": "Fetch a single task by id with full shape including notes and tags.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Get task",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_task",
+    "description": "Edit an existing task. Any field omitted is left unchanged. Pass `notes` (markdown) for the description body, or `notes: null` to clear. Pass `projectId: null` to clear the project, or a uuid to set/move it (the project must already exist - use list_projects). `#project`/`@tag` shorthand in `title` is NOT parsed on update (unlike create_task) - to change tags use `tags`/`addTags`/`removeTags`, to change project use `projectId`. Tag fields are exclusive: pass `tags` to replace the entire tag list, or `addTags`/`removeTags` for delta updates, not both. Status lets you move a task between buckets without delegating or completing - to mark a task done use `complete_task`, to schedule use `assign_horizon`.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projectId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ],
+          "description": "Move the task to a different bucket. Prefer `complete_task` / `assign_horizon` / `delegate_task` for the common flows."
+        },
+        "delegatedTo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Update delegation target without changing status. Pass null to clear. Use `delegate_task` for the full flow (status + follow-up in one call)."
+        },
+        "followUpAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Update follow-up date (ISO date or datetime). Null clears it."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Replace the entire tag list. Empty array clears all tags. Mutually exclusive with addTags/removeTags."
+        },
+        "addTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags to add (creates new tags as needed). Mutually exclusive with `tags`."
+        },
+        "removeTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags to remove. Mutually exclusive with `tags`."
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Update task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "complete_task",
+    "description": "Mark a task as done. If the task has a recurrence rule, the next instance is auto-created.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Complete task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "uncomplete_task",
+    "description": "Reverse a completion - restore a done task to the inbox so the user can re-schedule it. Use this when the agent (or the user) marked something complete by mistake. The task's horizon is cleared so the user actively re-decides.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Uncomplete task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_task",
+    "description": "Permanently delete a task. No archive, no undo. Prefer `archive_task` for reversible cleanup.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Delete task",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "archive_task",
+    "description": "Soft-delete a task by moving it to status='archived'. The task disappears from every active view but the row is retained so unarchive_task can bring it back. Prefer this over delete_task for routine cleanup.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Archive task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "unarchive_task",
+    "description": "Restore an archived task back to the inbox (no horizon, so the user re-decides where it belongs).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Unarchive task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_projects",
+    "description": "List the user's projects with task counts. Active by default - pass includeArchived=true to also surface archived projects.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "includeArchived": {
+          "type": "boolean",
+          "description": "Include archived projects in the response. Default false."
+        }
+      }
+    },
+    "annotations": {
+      "title": "List projects",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_project",
+    "description": "Create a project. Returns the new project id. Project names must be unique per user.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name (1–60 chars)."
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Optional hex color (e.g. '#3b82f6') for the project pill."
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "annotations": {
+      "title": "Create project",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_project",
+    "description": "Rename a project and/or change its color. Only provided fields are updated. Setting archived flips the soft-delete flag (use archive_project / unarchive_project for clarity unless you're updating multiple fields at once).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    },
+    "annotations": {
+      "title": "Update project",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "archive_project",
+    "description": "Soft-delete a project. The project hides from list_projects (unless includeArchived=true) and from the project picker. Tasks inside it are untouched - they keep referring to the project, so unarchiving brings everything back.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    },
+    "annotations": {
+      "title": "Archive project",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "unarchive_project",
+    "description": "Restore an archived project to active.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    },
+    "annotations": {
+      "title": "Unarchive project",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_tags",
+    "description": "List the user's existing tags. Call this before inventing new @tag names in create_task - picking an existing tag keeps the user's tag-list clean.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "List tags",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "rename_tag",
+    "description": "Rename a tag for the user. All tasks tagged with the old name will now show the new name (tags are joined by id, not text). Names are unique per user - renaming to an existing name will fail.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "oldName": {
+          "type": "string"
+        },
+        "newName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "oldName",
+        "newName"
+      ]
+    },
+    "annotations": {
+      "title": "Rename tag",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_tag",
+    "description": "Permanently delete a tag and unlink it from every task it was attached to. The tasks themselves are untouched. No undo.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "annotations": {
+      "title": "Delete tag",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "search_tasks",
+    "description": "Search the user's tasks with rich filters. `query` is a case-insensitive substring matched against title and (when includeBody=true) notes. Additional filters narrow the result set further; all are AND-combined. Omit `query` to filter purely by metadata. Archived tasks are excluded by default - pass includeArchived=true to include them.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Substring to search for. Optional - if omitted you can still filter by tags / project / horizon / date range."
+        },
+        "includeBody": {
+          "type": "boolean",
+          "description": "Also search the task notes/body, not just the title. Default false."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Filter to tasks that have ALL of these tag names."
+        },
+        "projectId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Filter to tasks in this project. Pass null for tasks without a project."
+        },
+        "horizons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "today_morning",
+              "today_afternoon",
+              "today_evening",
+              "tomorrow",
+              "in_n_days",
+              "next_week",
+              "someday"
+            ]
+          },
+          "description": "Filter to tasks with one of these time_horizon values."
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "inbox",
+              "today",
+              "later",
+              "delegated",
+              "done",
+              "archived"
+            ]
+          },
+          "description": "Filter by status. Default excludes 'archived' - overrides includeArchived if set."
+        },
+        "dateFrom": {
+          "type": "string",
+          "description": "ISO date YYYY-MM-DD - only tasks with horizon_target_date >= this date. Inclusive."
+        },
+        "dateTo": {
+          "type": "string",
+          "description": "ISO date YYYY-MM-DD - only tasks with horizon_target_date <= this date. Inclusive."
+        },
+        "includeArchived": {
+          "type": "boolean",
+          "description": "Include archived tasks. Ignored if `statuses` is set."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Max results (default 50, max 200)."
+        }
+      }
+    },
+    "annotations": {
+      "title": "Search tasks",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assign_horizon",
+    "description": "Set when a task should be done. Pass EITHER `horizon` (named bucket) OR `date` (explicit ISO date like '2026-05-20') - not both. Named buckets: `today_morning/afternoon/evening` → Today; `tomorrow`/`in_n_days`/`next_week`/`someday` → Later with the corresponding date. Explicit `date` resolves to today/in_n_days automatically (avoids LLM date arithmetic). Pass inNDays to override the user's default for the `in_n_days` bucket.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "horizon": {
+          "type": "string",
+          "enum": [
+            "today_morning",
+            "today_afternoon",
+            "today_evening",
+            "tomorrow",
+            "in_n_days",
+            "next_week",
+            "someday"
+          ]
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO date (YYYY-MM-DD) when the task should be done. Mutually exclusive with `horizon`. Past dates are rejected."
+        },
+        "inNDays": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Schedule task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delegate_task",
+    "description": "Mark a task as delegated to someone, with a follow-up date. The task disappears from Today until the follow-up date.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "delegatedTo": {
+          "type": "string",
+          "description": "Who the task is delegated to (free text - name, team, system)."
+        },
+        "followUpAt": {
+          "type": "string",
+          "description": "When to follow up (ISO date or datetime). Defaults to 7 days from now if omitted."
+        }
+      },
+      "required": [
+        "taskId",
+        "delegatedTo"
+      ]
+    },
+    "annotations": {
+      "title": "Delegate task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "move_to_project",
+    "description": "Bulk-assign a list of task ids to a project. Pass projectId: null to clear the project. The project must already exist (use list_projects).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "projectId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "taskIds"
+      ]
+    },
+    "annotations": {
+      "title": "Move tasks to project",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "bulk_complete",
+    "description": "Mark several tasks done in one round-trip. Recurrence is intentionally skipped here - use complete_task one at a time if you need recurring follow-ups.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 200
+        }
+      },
+      "required": [
+        "taskIds"
+      ]
+    },
+    "annotations": {
+      "title": "Complete tasks (bulk)",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "bulk_delete",
+    "description": "Permanently delete several tasks. No archive, no undo. Prefer letting the user delete via the UI for safety. Capped at 200 ids per call.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 200
+        }
+      },
+      "required": [
+        "taskIds"
+      ]
+    },
+    "annotations": {
+      "title": "Delete tasks (bulk)",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "bulk_assign_horizon",
+    "description": "Set the same horizon on several tasks in one round-trip. Same horizon/date semantics as `assign_horizon` - pass either `horizon` or `date`, not both.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 200
+        },
+        "horizon": {
+          "type": "string",
+          "enum": [
+            "today_morning",
+            "today_afternoon",
+            "today_evening",
+            "tomorrow",
+            "in_n_days",
+            "next_week",
+            "someday"
+          ]
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO date YYYY-MM-DD. Mutually exclusive with `horizon`."
+        },
+        "inNDays": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "taskIds"
+      ]
+    },
+    "annotations": {
+      "title": "Schedule tasks (bulk)",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_today",
+    "description": "One-shot read of everything that should land on the user's Today screen: overdue tasks (horizon_target_date in the past), today's scheduled tasks, delegated tasks with due follow-ups, and tasks completed today. Saves the three or four round-trips an agent would otherwise need to assemble this view. Returns { overdue, today, followUp, completedToday }.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "Get today's queue",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_review_queue",
+    "description": "Return tasks waiting to be triaged - inbox captures (no horizon assigned). Use this to drive a daily-review flow. Returns { inbox, count }.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "description": "Max tasks to return (default 100, max 500)."
+        }
+      }
+    },
+    "annotations": {
+      "title": "Get review queue",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "changes_since",
+    "description": "Return tasks whose `updated_at` is strictly newer than the given ISO timestamp. Use this for incremental sync - pass the timestamp from the last response back next call. **Caveat:** deletions are NOT reported (no tombstone table); if the agent has a cached copy and a task disappears server-side, a periodic full reconcile is needed. Capped at 500 rows.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "updatedSince": {
+          "type": "string",
+          "description": "ISO datetime - return tasks updated strictly after this point."
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "inbox",
+              "today",
+              "later",
+              "delegated",
+              "done",
+              "archived"
+            ]
+          },
+          "description": "Optional status filter. Omit to include every status."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Max rows (default 200, max 500)."
+        }
+      },
+      "required": [
+        "updatedSince"
+      ]
+    },
+    "annotations": {
+      "title": "Changes since",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "set_recurrence",
+    "description": "Set or clear a task's repeat rule. Pass rule: null to make the task non-recurring. For weekly, `weekdays` is an array of 0-6 (Sun=0). When a recurring task is completed, the next instance is auto-created.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "rule": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "frequency": {
+                  "type": "string",
+                  "enum": [
+                    "daily",
+                    "weekly",
+                    "monthly"
+                  ]
+                },
+                "interval": {
+                  "type": "number",
+                  "minimum": 1
+                },
+                "weekdays": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                },
+                "day_of_month": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 31
+                }
+              },
+              "required": [
+                "frequency"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "taskId",
+        "rule"
+      ]
+    },
+    "annotations": {
+      "title": "Set recurrence",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_morning_digest",
+    "description": "Read the user's morning digest email preferences. Returns enabled, target email, mode (combined/per_project), hour (0-23), and IANA timezone. Use this before suggesting edits via configure_morning_digest.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "Get morning digest settings",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "configure_morning_digest",
+    "description": "Configure the daily morning digest email. All fields are optional - only provided fields are updated. The digest summarises today's tasks, overdue items, delegated follow-ups, and new inbox captures, delivered at the chosen local hour. Pass `email: \"\"` to clear an override and fall back to the user's account email.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Turn the digest on or off. Off = no email sent regardless of other settings."
+        },
+        "email": {
+          "type": "string",
+          "description": "Override delivery address. Empty string clears the override and uses the account email."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "combined",
+            "per_project"
+          ],
+          "description": "`combined` (default) = one email with everything. `per_project` = one email per project + an Inbox email for tasks without a project."
+        },
+        "hour": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 23,
+          "description": "Local hour (0-23) to send the digest. 7 = 07:00."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone (e.g. 'Europe/Copenhagen', 'America/New_York'). Defines what `hour` means."
+        }
+      }
+    },
+    "annotations": {
+      "title": "Configure morning digest",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_team",
+    "description": "Create a new team. The caller becomes the team owner. Teams own shared projects (see `convert_project_to_shared`) and the owner can invite editor/viewer members.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Team name (1-80 chars)."
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "annotations": {
+      "title": "Create team",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_teams",
+    "description": "List teams the user is a member of, with the user's role on each (owner/editor/viewer).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "List teams",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_team",
+    "description": "Fetch a team's full state: team row, member list with roles, pending invitations, and the caller's own role on the team.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId"
+      ]
+    },
+    "annotations": {
+      "title": "Get team",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_team",
+    "description": "Rename a team. Owner only.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId",
+        "name"
+      ]
+    },
+    "annotations": {
+      "title": "Rename team",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_team",
+    "description": "Permanently delete a team. Cascades to all shared projects, their tasks, members, and invitations. Owner only. No undo.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId"
+      ]
+    },
+    "annotations": {
+      "title": "Delete team",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_team_members",
+    "description": "List members of a team with role, joined_at, display_name and email. Any member can call this.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId"
+      ]
+    },
+    "annotations": {
+      "title": "List team members",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_member_role",
+    "description": "Change a member's role between 'editor' and 'viewer'. Cannot promote/demote to/from 'owner' (use ownership transfer flow). Owner only.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "editor",
+            "viewer"
+          ]
+        }
+      },
+      "required": [
+        "teamId",
+        "userId",
+        "role"
+      ]
+    },
+    "annotations": {
+      "title": "Update member role",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "remove_team_member",
+    "description": "Remove a member from a team. Owner can remove anyone except themselves. A non-owner member can pass their own userId to leave. Owner cannot leave - transfer or delete the team first.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Member to remove. Pass your own userId to leave the team yourself."
+        }
+      },
+      "required": [
+        "teamId",
+        "userId"
+      ]
+    },
+    "annotations": {
+      "title": "Remove team member",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "invite_to_team",
+    "description": "Invite someone to a team by email. Creates an invitation with a single-use token, expires in 14 days, and sends a transactional email to the recipient. Owner only. The invited email must accept via `accept_invitation` from a Taskpile account where the email matches. A team is capped at 10 active email invitations - if you hit the cap, ask the owner to revoke older invitations or wait for them to be accepted/expire. An optional `personalMessage` (max 500 chars) is included in the email body.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "description": "Recipient email."
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "editor",
+            "viewer"
+          ],
+          "description": "Role granted upon acceptance. Default 'editor'."
+        },
+        "personalMessage": {
+          "type": "string",
+          "description": "Optional personal note (max 500 chars) shown in the invitation email body."
+        }
+      },
+      "required": [
+        "teamId",
+        "email"
+      ]
+    },
+    "annotations": {
+      "title": "Invite to team",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_invitations",
+    "description": "List invitations on a team (pending + accepted history). Any member can read.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId"
+      ]
+    },
+    "annotations": {
+      "title": "List invitations",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "revoke_invitation",
+    "description": "Delete a pending invitation. Owner only. Has no effect if the invitation has already been accepted.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invitationId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invitationId"
+      ]
+    },
+    "annotations": {
+      "title": "Revoke invitation",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "accept_invitation",
+    "description": "Accept a team invitation. Validates token + expiry + that the caller's account email matches the invitation. Creates the team_members row and marks the invitation accepted.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token"
+      ]
+    },
+    "annotations": {
+      "title": "Accept invitation",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "convert_project_to_shared",
+    "description": "Convert a personal project into a shared project owned by a team. IRREVERSIBLE - shared projects cannot be converted back to personal. The team owner becomes the default triager. By default, existing tasks in the project are auto-assigned to the converter so they don't disappear from anyone's Today. Caller must own the project AND be owner/editor of the team.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": "string"
+        },
+        "keepExistingTasksAssignedToMe": {
+          "type": "boolean",
+          "description": "If true (default), sets assignee_id = caller on every existing task in the project so they keep showing up in the caller's Today/Later. Pass false to leave them unassigned (visible only in the project view)."
+        }
+      },
+      "required": [
+        "projectId",
+        "teamId"
+      ]
+    },
+    "annotations": {
+      "title": "Convert project to shared",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "set_project_triager",
+    "description": "Set (or clear) the triager on a shared project. The triager is the team member who sees unassigned tasks from this project in their personal review queue. Pass userId: null to clear. Owner only. The triager must be a team member.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Team member to make triager, or null to clear."
+        }
+      },
+      "required": [
+        "projectId",
+        "userId"
+      ]
+    },
+    "annotations": {
+      "title": "Set project triager",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assign_task",
+    "description": "Assign (or unassign) a task in a shared project to a team member. The assignee then sees the task in their Today/Later/Inbox based on the task's status. Pass assigneeId: null to unassign and return the task to the project's unassigned pile. Only valid for tasks in shared projects. Caller must be owner/editor of the project's team.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "assigneeId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Team member to assign to, or null to unassign."
+        }
+      },
+      "required": [
+        "taskId",
+        "assigneeId"
+      ]
+    },
+    "annotations": {
+      "title": "Assign task",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_project_auto_assign",
+    "description": "Set the per-project default-assignee strategy for a shared project. New tasks created in this project will be assigned according to `strategy`: 'creator' (default for new shared projects - the task creator gets the assignment), 'owner' (the team owner gets every new task), 'specific' (a fixed member identified by `userId` gets every new task), or 'unassigned' (tasks land in the triager's review pile). Caller must be owner or editor of the project's team. Personal projects ignore this setting.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "creator",
+            "owner",
+            "specific",
+            "unassigned"
+          ]
+        },
+        "userId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Required when strategy='specific'. Must be a team member."
+        }
+      },
+      "required": [
+        "projectId",
+        "strategy"
+      ]
+    },
+    "annotations": {
+      "title": "Update project auto-assign",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "move_task_to_private",
+    "description": "Pull a task out of a shared project so it becomes a private inbox task on the caller's account. Allowed for the task's creator OR the project's owner. The task's project_id and assignee_id are cleared and status is reset to 'inbox'. Audit-logged so the team can see where it went.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "annotations": {
+      "title": "Move task to private",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "unshare_project",
+    "description": "Pull a whole shared project back to a personal project. Strict - only allowed when the project contains no tasks from any other team member AND the team_audit_log has no foreign actor entries against this project. Caller must be the project's original owner. To free up a project that doesn't qualify, the owner must first move or delete the foreign tasks.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    },
+    "annotations": {
+      "title": "Unshare project",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "invite_to_project",
+    "description": "Invite someone to a single project by email. Creates an invitation with a single-use token, expires in 14 days, and sends a transactional email to the recipient. Owner-of-project only. The invited email accepts via `accept_invitation`. Free-tier projects are capped at 4 people total (owner + 3 others, counting members + active invitations).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "description": "Recipient email."
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "editor",
+            "viewer"
+          ],
+          "description": "Role granted upon acceptance. Default 'editor'."
+        },
+        "personalMessage": {
+          "type": "string",
+          "description": "Optional personal note (max 500 chars) shown in the email body."
+        }
+      },
+      "required": [
+        "projectId",
+        "email"
+      ]
+    },
+    "annotations": {
+      "title": "Invite to project",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_project_members",
+    "description": "List people with access to a shared project, including their role (owner/editor/viewer), display_name, email, and is_me flag. Caller must be a member.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    },
+    "annotations": {
+      "title": "List project members",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_project_member_role",
+    "description": "Change a project member's role between 'editor' and 'viewer'. Owner-of-project only. Owner role cannot be set via this verb.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "editor",
+            "viewer"
+          ]
+        }
+      },
+      "required": [
+        "projectId",
+        "userId",
+        "role"
+      ]
+    },
+    "annotations": {
+      "title": "Update project member role",
+      "readOnlyHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "remove_project_member",
+    "description": "Remove a member from a shared project. Owner can remove anyone except themselves; any non-owner member can remove themselves (leave). The departing member's tasks in this project are re-assigned to the project's triager (falling back to project owner).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "userId"
+      ]
+    },
+    "annotations": {
+      "title": "Remove project member",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_unassigned_tasks",
+    "description": "List unassigned tasks in shared projects. If `projectId` is provided, returns unassigned tasks for that one project (any team member can call). Without `projectId`, returns unassigned tasks across every shared project where the caller is the triager - the data feed for the triager's review queue.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "Optional: scope to one project. Omit to get the caller's full triager pile."
+        }
+      }
+    },
+    "annotations": {
+      "title": "List unassigned tasks",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "whoami",
+    "description": "Identify the authenticated Taskpile account and return current state. Returns `user_id`, `email`, `display_name`, `account_created_at`, a `usage` block (task counts by status, active project count, tag count), a `teams` array (each team the user is a member of with role + joined_at) and a `subscription` block (tier, status, next_payment_at, per-tier limits). Use this to greet the user by name, surface their current consumption against limits, list their teams, or remind them of the next billing date. Billing is not yet live during beta - the subscription block will report tier='free' with null limits and a note until Paddle integration ships.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "Who am I",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_inbox_email",
+    "description": "Return the user's per-account email-inbox alias (e.g. inbox-a3f7c2e9b4d18650@taskpile.app). Mails sent to this address create tasks in the inbox. Returns null if the user hasn't generated one yet - point them to Settings → Email to your inbox. NEVER call regenerate from an agent; that's a Settings-only action by design.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "Get inbox email address",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "search",
+    "description": "Search the user's tasks. Returns ranked results with id, title, snippet, and a deep link. Optimized for ChatGPT Deep Research / Company Knowledge surfaces (OpenAI Apps SDK schema). For richer filtering use `search_tasks` instead.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Substring to search task titles for."
+        },
+        "max_results": {
+          "type": "number",
+          "description": "Max results to return (default 10, max 50)."
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "annotations": {
+      "title": "Search (OpenAI shape)",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "fetch",
+    "description": "Fetch the full content of a single task by id. Returns id, title, text (markdown body), url, and metadata. OpenAI Apps SDK companion to `search`.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The task id returned by `search`."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "title": "Fetch (OpenAI shape)",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  }
+]
