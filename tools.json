@@ -46,6 +46,96 @@
         "title"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
+    },
     "annotations": {
       "title": "Create task",
       "readOnlyHint": false,
@@ -97,6 +187,109 @@
       "title": "List tasks",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Tasks matching the filters, ordered by updated_at desc.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Tasks matching the filters, ordered by updated_at desc.",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -106,12 +299,103 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID)."
         }
       },
       "required": [
         "taskId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Get task",
@@ -126,22 +410,26 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to update."
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "New title. Shorthand is NOT parsed here."
         },
         "notes": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Markdown notes/body. Pass null to clear."
         },
         "projectId": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Move to this project, or null to clear. The project must already exist."
         },
         "status": {
           "type": "string",
@@ -195,6 +483,96 @@
         "taskId"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
+    },
     "annotations": {
       "title": "Update task",
       "readOnlyHint": false,
@@ -210,12 +588,103 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to complete."
         }
       },
       "required": [
         "taskId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Complete task",
@@ -232,12 +701,103 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to un-complete."
         }
       },
       "required": [
         "taskId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Uncomplete task",
@@ -254,11 +814,24 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to delete."
         }
       },
       "required": [
         "taskId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -276,12 +849,103 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to archive."
         }
       },
       "required": [
         "taskId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Archive task",
@@ -298,12 +962,103 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to unarchive."
         }
       },
       "required": [
         "taskId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Unarchive task",
@@ -329,6 +1084,81 @@
       "title": "List projects",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Projects with attached task_count.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Projects with attached task_count.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "color": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "emoji": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "archived": {
+                "type": "boolean"
+              },
+              "team_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Set when the project is shared."
+              },
+              "triager_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "auto_assign_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "auto_assign_user_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Original owner."
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "task_count": {
+                "type": "number",
+                "description": "Active task count in the project."
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -353,6 +1183,65 @@
         "name"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
+    },
     "annotations": {
       "title": "Create project",
       "readOnlyHint": false,
@@ -368,6 +1257,34 @@
       "type": "object",
       "properties": {
         "projectId": {
+          "type": "string",
+          "description": "Project id (UUID) to update."
+        },
+        "name": {
+          "type": "string",
+          "description": "New project name."
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Hex color for the project pill, or null to clear."
+        },
+        "archived": {
+          "type": "boolean",
+          "description": "Flip the soft-delete flag. Prefer archive_project / unarchive_project."
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
           "type": "string"
         },
         "name": {
@@ -379,13 +1296,48 @@
             "null"
           ]
         },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "archived": {
           "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
         }
-      },
-      "required": [
-        "projectId"
-      ]
+      }
     },
     "annotations": {
       "title": "Update project",
@@ -402,12 +1354,72 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Project id (UUID) to archive."
         }
       },
       "required": [
         "projectId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Archive project",
@@ -424,12 +1436,72 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Project id (UUID) to unarchive."
         }
       },
       "required": [
         "projectId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Unarchive project",
@@ -450,6 +1522,34 @@
       "title": "List tags",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "All tags belonging to the user.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "All tags belonging to the user.",
+          "items": {
+            "type": "object",
+            "description": "A tag row.",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "user_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -459,16 +1559,33 @@
       "type": "object",
       "properties": {
         "oldName": {
-          "type": "string"
+          "type": "string",
+          "description": "Current tag name to rename."
         },
         "newName": {
-          "type": "string"
+          "type": "string",
+          "description": "New tag name. Must not collide with an existing tag."
         }
       },
       "required": [
         "oldName",
         "newName"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A tag row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Rename tag",
@@ -485,11 +1602,24 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Tag name to delete."
         }
       },
       "required": [
         "name"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -581,6 +1711,109 @@
       "title": "Search tasks",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Tasks matching all filters.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Tasks matching all filters.",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -590,7 +1823,8 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to schedule."
         },
         "horizon": {
           "type": "string",
@@ -602,19 +1836,111 @@
             "in_n_days",
             "next_week",
             "someday"
-          ]
+          ],
+          "description": "Named time-bucket. Mutually exclusive with `date`."
         },
         "date": {
           "type": "string",
           "description": "ISO date (YYYY-MM-DD) when the task should be done. Mutually exclusive with `horizon`. Past dates are rejected."
         },
         "inNDays": {
-          "type": "number"
+          "type": "number",
+          "description": "Override the user's default for the `in_n_days` bucket."
         }
       },
       "required": [
         "taskId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Schedule task",
@@ -631,7 +1957,8 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to delegate."
         },
         "delegatedTo": {
           "type": "string",
@@ -646,6 +1973,96 @@
         "taskId",
         "delegatedTo"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Delegate task",
@@ -666,18 +2083,30 @@
           "items": {
             "type": "string"
           },
-          "minItems": 1
+          "minItems": 1,
+          "description": "Task ids to move. 1-200 entries."
         },
         "projectId": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Destination project id (UUID), or null to clear the project on every task."
         }
       },
       "required": [
         "taskIds"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Bulk result.",
+      "properties": {
+        "updated": {
+          "type": "number",
+          "description": "Number of tasks moved."
+        }
+      }
     },
     "annotations": {
       "title": "Move tasks to project",
@@ -699,12 +2128,23 @@
             "type": "string"
           },
           "minItems": 1,
-          "maxItems": 200
+          "maxItems": 200,
+          "description": "Task ids to complete (1-200)."
         }
       },
       "required": [
         "taskIds"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Bulk result.",
+      "properties": {
+        "completed": {
+          "type": "number",
+          "description": "Number of tasks marked done."
+        }
+      }
     },
     "annotations": {
       "title": "Complete tasks (bulk)",
@@ -726,12 +2166,23 @@
             "type": "string"
           },
           "minItems": 1,
-          "maxItems": 200
+          "maxItems": 200,
+          "description": "Task ids to delete permanently (1-200)."
         }
       },
       "required": [
         "taskIds"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Bulk result.",
+      "properties": {
+        "deleted": {
+          "type": "number",
+          "description": "Number of tasks deleted."
+        }
+      }
     },
     "annotations": {
       "title": "Delete tasks (bulk)",
@@ -753,7 +2204,8 @@
             "type": "string"
           },
           "minItems": 1,
-          "maxItems": 200
+          "maxItems": 200,
+          "description": "Task ids to schedule (1-200)."
         },
         "horizon": {
           "type": "string",
@@ -765,19 +2217,31 @@
             "in_n_days",
             "next_week",
             "someday"
-          ]
+          ],
+          "description": "Named time-bucket. Mutually exclusive with `date`."
         },
         "date": {
           "type": "string",
           "description": "ISO date YYYY-MM-DD. Mutually exclusive with `horizon`."
         },
         "inNDays": {
-          "type": "number"
+          "type": "number",
+          "description": "Override the user's default for the `in_n_days` bucket."
         }
       },
       "required": [
         "taskIds"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Bulk result.",
+      "properties": {
+        "updated": {
+          "type": "number",
+          "description": "Number of tasks scheduled."
+        }
+      }
     },
     "annotations": {
       "title": "Schedule tasks (bulk)",
@@ -794,6 +2258,384 @@
       "type": "object",
       "properties": {}
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "Aggregated Today-screen view.",
+      "properties": {
+        "overdue": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        },
+        "today": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        },
+        "followUp": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        },
+        "completedToday": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        }
+      }
+    },
     "annotations": {
       "title": "Get today's queue",
       "readOnlyHint": true,
@@ -809,6 +2651,108 @@
         "limit": {
           "type": "number",
           "description": "Max tasks to return (default 100, max 500)."
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Inbox review queue.",
+      "properties": {
+        "inbox": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        },
+        "count": {
+          "type": "number"
         }
       }
     },
@@ -856,6 +2800,109 @@
       "title": "Changes since",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Tasks updated after the cursor.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Tasks updated after the cursor.",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -865,9 +2912,11 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to update."
         },
         "rule": {
+          "description": "New recurrence rule, or null to clear repeat.",
           "anyOf": [
             {
               "type": "null"
@@ -913,6 +2962,96 @@
         "rule"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
+    },
     "annotations": {
       "title": "Set recurrence",
       "readOnlyHint": false,
@@ -927,6 +3066,36 @@
     "inputSchema": {
       "type": "object",
       "properties": {}
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Morning-digest preferences.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "combined",
+            "per_project"
+          ]
+        },
+        "hour": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 23
+        },
+        "timezone": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Get morning digest settings",
@@ -968,6 +3137,34 @@
         }
       }
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "Updated digest preferences.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "combined",
+            "per_project"
+          ]
+        },
+        "hour": {
+          "type": "number"
+        },
+        "timezone": {
+          "type": "string"
+        }
+      }
+    },
     "annotations": {
       "title": "Configure morning digest",
       "readOnlyHint": false,
@@ -991,6 +3188,24 @@
         "name"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "New team row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
+    },
     "annotations": {
       "title": "Create team",
       "readOnlyHint": false,
@@ -1010,6 +3225,50 @@
       "title": "List teams",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Teams the user is a member of.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Teams the user is a member of.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "owner_id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "joined_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -1019,12 +3278,135 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID) to fetch."
         }
       },
       "required": [
         "teamId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Team state bundle.",
+      "properties": {
+        "team": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner_id": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            }
+          }
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A team_members row, enriched with profile fields.",
+            "properties": {
+              "team_id": {
+                "type": "string"
+              },
+              "user_id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "joined_at": {
+                "type": "string"
+              },
+              "display_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "invitations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A pending or accepted invitation.",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "team_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "invited_by": {
+                "type": "string"
+              },
+              "expires_at": {
+                "type": "string"
+              },
+              "accepted_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "my_role": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "owner",
+            "editor",
+            "viewer",
+            null
+          ]
+        }
+      }
     },
     "annotations": {
       "title": "Get team",
@@ -1039,16 +3421,36 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID) to rename."
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "New team name (1-80 chars)."
         }
       },
       "required": [
         "teamId",
         "name"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Updated team row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Rename team",
@@ -1065,11 +3467,24 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID) to delete."
         }
       },
       "required": [
         "teamId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -1087,7 +3502,8 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID)."
         }
       },
       "required": [
@@ -1098,6 +3514,54 @@
       "title": "List team members",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Team members.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Team members.",
+          "items": {
+            "type": "object",
+            "description": "A team_members row, enriched with profile fields.",
+            "properties": {
+              "team_id": {
+                "type": "string"
+              },
+              "user_id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "joined_at": {
+                "type": "string"
+              },
+              "display_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -1107,23 +3571,38 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID)."
         },
         "userId": {
-          "type": "string"
+          "type": "string",
+          "description": "Member's user id (UUID)."
         },
         "role": {
           "type": "string",
           "enum": [
             "editor",
             "viewer"
-          ]
+          ],
+          "description": "New role. 'owner' cannot be set via this verb."
         }
       },
       "required": [
         "teamId",
         "userId",
         "role"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -1141,7 +3620,8 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID)."
         },
         "userId": {
           "type": "string",
@@ -1151,6 +3631,18 @@
       "required": [
         "teamId",
         "userId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -1168,7 +3660,8 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID) to invite into."
         },
         "email": {
           "type": "string",
@@ -1192,6 +3685,52 @@
         "email"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "A pending or accepted invitation.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "editor",
+            "viewer"
+          ]
+        },
+        "invited_by": {
+          "type": "string"
+        },
+        "expires_at": {
+          "type": "string"
+        },
+        "accepted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
+    },
     "annotations": {
       "title": "Invite to team",
       "readOnlyHint": false,
@@ -1207,7 +3746,8 @@
       "type": "object",
       "properties": {
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID)."
         }
       },
       "required": [
@@ -1218,6 +3758,65 @@
       "title": "List invitations",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Invitations.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Invitations.",
+          "items": {
+            "type": "object",
+            "description": "A pending or accepted invitation.",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "team_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "invited_by": {
+                "type": "string"
+              },
+              "expires_at": {
+                "type": "string"
+              },
+              "accepted_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -1227,11 +3826,24 @@
       "type": "object",
       "properties": {
         "invitationId": {
-          "type": "string"
+          "type": "string",
+          "description": "Invitation id (UUID) to revoke."
         }
       },
       "required": [
         "invitationId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -1249,12 +3861,38 @@
       "type": "object",
       "properties": {
         "token": {
-          "type": "string"
+          "type": "string",
+          "description": "Single-use invitation token from the email."
         }
       },
       "required": [
         "token"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Outcome of accepting the invitation.",
+      "properties": {
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "editor",
+            "viewer"
+          ]
+        }
+      }
     },
     "annotations": {
       "title": "Accept invitation",
@@ -1271,10 +3909,12 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Personal project id (UUID) to convert."
         },
         "teamId": {
-          "type": "string"
+          "type": "string",
+          "description": "Team id (UUID) that will own the project."
         },
         "keepExistingTasksAssignedToMe": {
           "type": "boolean",
@@ -1285,6 +3925,65 @@
         "projectId",
         "teamId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Convert project to shared",
@@ -1301,7 +4000,8 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Shared project id (UUID)."
         },
         "userId": {
           "type": [
@@ -1315,6 +4015,65 @@
         "projectId",
         "userId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Set project triager",
@@ -1331,7 +4090,8 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) in a shared project."
         },
         "assigneeId": {
           "type": [
@@ -1345,6 +4105,96 @@
         "taskId",
         "assigneeId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Assign task",
@@ -1361,7 +4211,8 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Shared project id (UUID) to configure."
         },
         "strategy": {
           "type": "string",
@@ -1370,7 +4221,8 @@
             "owner",
             "specific",
             "unassigned"
-          ]
+          ],
+          "description": "Auto-assign strategy for newly created tasks."
         },
         "userId": {
           "type": [
@@ -1384,6 +4236,65 @@
         "projectId",
         "strategy"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Update project auto-assign",
@@ -1400,12 +4311,103 @@
       "type": "object",
       "properties": {
         "taskId": {
-          "type": "string"
+          "type": "string",
+          "description": "Task id (UUID) to move private."
         }
       },
       "required": [
         "taskId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile task row.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (UUID)."
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owning user id."
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Markdown notes/body."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "today",
+            "later",
+            "delegated",
+            "done",
+            "archived"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_horizon": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "horizon_target_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegated_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tag names attached to the task."
+        }
+      }
     },
     "annotations": {
       "title": "Move task to private",
@@ -1422,12 +4424,72 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Shared project id (UUID) to unshare."
         }
       },
       "required": [
         "projectId"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "A Taskpile project row.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emoji": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Set when the project is shared."
+        },
+        "triager_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auto_assign_user_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Original owner."
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
     },
     "annotations": {
       "title": "Unshare project",
@@ -1444,7 +4506,8 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Project id (UUID) to invite into."
         },
         "email": {
           "type": "string",
@@ -1468,6 +4531,52 @@
         "email"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "A pending or accepted invitation.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "team_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "editor",
+            "viewer"
+          ]
+        },
+        "invited_by": {
+          "type": "string"
+        },
+        "expires_at": {
+          "type": "string"
+        },
+        "accepted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
+    },
     "annotations": {
       "title": "Invite to project",
       "readOnlyHint": false,
@@ -1483,7 +4592,8 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Project id (UUID)."
         }
       },
       "required": [
@@ -1494,6 +4604,56 @@
       "title": "List project members",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Project members.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Project members.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "team_id": {
+                "type": "string"
+              },
+              "user_id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "joined_at": {
+                "type": "string"
+              },
+              "display_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "is_me": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -1503,23 +4663,38 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Project id (UUID)."
         },
         "userId": {
-          "type": "string"
+          "type": "string",
+          "description": "Member's user id (UUID)."
         },
         "role": {
           "type": "string",
           "enum": [
             "editor",
             "viewer"
-          ]
+          ],
+          "description": "New role. 'owner' cannot be set via this verb."
         }
       },
       "required": [
         "projectId",
         "userId",
         "role"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -1536,15 +4711,29 @@
       "type": "object",
       "properties": {
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "Project id (UUID)."
         },
         "userId": {
-          "type": "string"
+          "type": "string",
+          "description": "Member to remove. Non-owners may pass their own id to leave."
         }
       },
       "required": [
         "projectId",
         "userId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Success indicator.",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
       ]
     },
     "annotations": {
@@ -1571,6 +4760,109 @@
       "title": "List unassigned tasks",
       "readOnlyHint": true,
       "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Unassigned tasks in shared projects.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Unassigned tasks in shared projects.",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
     }
   },
   {
@@ -1579,6 +4871,119 @@
     "inputSchema": {
       "type": "object",
       "properties": {}
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Identity + usage + subscription snapshot for the authenticated user.",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "display_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "account_created_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "inbox": {
+              "type": "number"
+            },
+            "today": {
+              "type": "number"
+            },
+            "later": {
+              "type": "number"
+            },
+            "delegated": {
+              "type": "number"
+            },
+            "done": {
+              "type": "number"
+            },
+            "archived": {
+              "type": "number"
+            },
+            "projects_active": {
+              "type": "number"
+            },
+            "tags": {
+              "type": "number"
+            }
+          }
+        },
+        "teams": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "team_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "joined_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "subscription": {
+          "type": "object",
+          "properties": {
+            "tier": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "next_payment_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "limits": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
     },
     "annotations": {
       "title": "Who am I",
@@ -1592,6 +4997,18 @@
     "inputSchema": {
       "type": "object",
       "properties": {}
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Email-inbox alias for the user, if minted.",
+      "properties": {
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     },
     "annotations": {
       "title": "Get inbox email address",
@@ -1618,6 +5035,33 @@
         "query"
       ]
     },
+    "outputSchema": {
+      "type": "object",
+      "description": "OpenAI Apps SDK search-result envelope.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string",
+                "description": "Snippet for the search hit."
+              },
+              "url": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
     "annotations": {
       "title": "Search (OpenAI shape)",
       "readOnlyHint": true,
@@ -1638,6 +5082,31 @@
       "required": [
         "id"
       ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "OpenAI Apps SDK fetch-result envelope.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "description": "Full markdown body."
+        },
+        "url": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
     },
     "annotations": {
       "title": "Fetch (OpenAI shape)",
