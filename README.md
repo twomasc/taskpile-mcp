@@ -1,5 +1,7 @@
 # Taskpile MCP
 
+[![smithery badge](https://smithery.ai/badge/twomasc/taskpile)](https://smithery.ai/servers/twomasc/taskpile)
+
 Public documentation for **Taskpile**'s Model Context Protocol server. Taskpile is an AI-first task manager designed to be used through your chat client — capture tasks in Claude, plan in ChatGPT, finish in Taskpile.
 
 - App: <https://taskpile.app>
