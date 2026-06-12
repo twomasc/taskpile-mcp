@@ -1,2 +1,5 @@
 # Local agent context — not for the public repo.
 AGENT_BRIEF.md
+
+# IDE configuration
+.vscode/
