@@ -50,8 +50,8 @@ A quick taste:
 - `assign_horizon` (today_morning, tomorrow, next_week, etc.), `delegate_task`, `set_recurrence`
 - `list_projects`, `create_project`, `archive_project`
 - `search_tasks` (free-text + status/horizon filters)
-- `bulk_complete`, `bulk_delete`, `bulk_assign_horizon` (up to 200 ids per call)
-- `changes_since` (incremental sync), `get_today`, `get_review_queue`
+- `bulk_complete`, `bulk_archive` (reversible — prefer over `bulk_delete`), `bulk_delete`, `bulk_assign_horizon` (up to 200 ids per call)
+- `changes_since` (incremental sync — deletions are not reported, so reconcile with a full fetch periodically; capped at 500 rows per call), `get_today`, `get_review_queue`
 - `get_morning_digest`, `configure_morning_digest`
 - `whoami`, `get_inbox_email`
 - Teams: `create_team`, `invite_to_team`, `accept_invitation`, `assign_task`, `convert_project_to_shared`, etc.
@@ -63,6 +63,7 @@ A few project-wide conventions worth knowing if you're writing a prompt:
 
 - **Tags use `@tag_name`. Projects use `#project_name`.** Do NOT use `#` for tags — `#foo` is silently treated as a project name.
 - `create_task` parses `#project` and `@tag` shorthand from the title. Only the FIRST `#` token becomes the project; the rest are stripped.
+- `#name` resolution covers projects shared with you, not just your own. If the name is unique it's used; if it's ambiguous (e.g. a private AND a shared project with the same name) the call **fails with a candidate list** — ask the user which, then retry with an explicit `projectId`. If nothing matches, a new project you own is created.
 - To set tags at creation, pass `tags: string[]` and/or put `@tag` in the title. Both forms work and are de-duplicated.
 - `update_task` does **not** parse `#`/`@` shorthand from the title. Use `tags` / `addTags` / `removeTags` and `projectId` to change those.
 - Prefer dedicated verbs over `update_task` when they exist: `complete_task`, `assign_horizon`, `delegate_task`.

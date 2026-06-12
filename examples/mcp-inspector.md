@@ -20,7 +20,7 @@ The Inspector handles the OAuth dance automatically — a browser tab will open 
 
 ## What to try
 
-- **List Tools** — should show 57 tools grouped by category (tasks, projects, tags, teams, integrations).
+- **List Tools** — should show 63 tools grouped by category (tasks, projects, tags, teams, integrations).
 - **Call `whoami`** — sanity check the auth resolved to the right user.
 - **Call `list_tasks` with `{ "status": "today" }`** — quickly see what's on your plate.
 - **Call `create_task` with `{ "title": "Test from Inspector #inbox-test @mcp" }`** — verifies the `#project` and `@tag` shorthand parsing works.
