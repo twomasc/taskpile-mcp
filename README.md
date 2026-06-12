@@ -42,7 +42,7 @@ For hosted clients like Claude.ai and ChatGPT, add Taskpile via their built-in c
 
 ## Tools
 
-Taskpile exposes **57 tools** spanning task CRUD, projects, tags, search, bulk operations, teams, and account integrations like morning digest. The full machine-readable schema (names, descriptions, JSON Schema for inputs) is in [`tools.json`](./tools.json) — auto-generated from the live server, so it's always in sync with what `tools/list` returns.
+Taskpile exposes **63 tools** spanning task CRUD, projects, tags, search, bulk operations, teams, and account integrations like morning digest. The full machine-readable schema (names, descriptions, JSON Schema for inputs) is in [`tools.json`](./tools.json) — auto-generated from the live server, so it's always in sync with what `tools/list` returns.
 
 A quick taste:
 

@@ -1,7 +1,7 @@
 [
   {
     "name": "create_task",
-    "description": "Create a task in the user's Taskpile inbox. Returns the new task id and shape. Tag syntax is `@tag_name`, NOT `#tag_name` - `#name` is the project shorthand and only the first `#` token in the title is used. Title may include one `#project_name` (auto-creates the project if missing) and any number of `@tag_name` tokens; both are stripped from the stored title. To set tags at creation, either use `@tag` in the title or pass the `tags: string[]` array (the two forms can be combined and are de-duplicated). Optionally pass `notes` for markdown context, and `horizon` to schedule it in one call (skips placing it in inbox).",
+    "description": "Create a task in the user's Taskpile inbox. Returns the new task id and shape plus a `project` object ({id,name,shared,role,member_count}, or null) describing where it landed - use it to confirm a shared destination to the user, e.g. \"added to the shared project 'indkøbsliste'\". Tag syntax is `@tag_name`, NOT `#tag_name` - `#name` is the project shorthand and only the first `#` token in the title is used. Title may include one `#project_name` and any number of `@tag_name` tokens; both are stripped from the stored title. Project resolution for `#name`: if exactly one project you can reach (owned OR shared with you) has that name it's used; if several do (e.g. a private AND a shared one), the call FAILS with the candidate list - surface it and ask the user which, then retry with an explicit `projectId`; if none match, a new project YOU own is created (shorthand never writes into someone else's project). Pass `projectId` to target a specific project, including one shared with you - viewer access is rejected. To set tags at creation, use `@tag` in the title or pass `tags: string[]` (combined and de-duplicated). Optionally pass `notes` for markdown context, and `horizon` to schedule it in one call (skips placing it in inbox).",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -32,7 +32,7 @@
         },
         "projectId": {
           "type": "string",
-          "description": "Explicit project id (overrides #project shorthand)."
+          "description": "Explicit project id (overrides #project shorthand). May be a project shared with you; viewer access is rejected. Look ids up via list_projects."
         },
         "tags": {
           "type": "array",
@@ -53,6 +53,10 @@
         "id": {
           "type": "string",
           "description": "Task id (UUID)."
+        },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
         },
         "user_id": {
           "type": "string",
@@ -103,6 +107,17 @@
             "null"
           ]
         },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
+        },
         "delegated_to": {
           "type": [
             "string",
@@ -146,7 +161,7 @@
   },
   {
     "name": "list_tasks",
-    "description": "List the user's tasks. Status semantics: `inbox` = unsorted captures, `today` = scheduled for today, `later` = scheduled for a future date (tomorrow, in_n_days, next_week have an explicit horizon_target_date; someday has none), `delegated` = handed off (see follow_up_at), `done` = completed, `archived` = soft-deleted. Pass `statuses: string[]` to combine - e.g. ['inbox','today','later'] for everything active.",
+    "description": "List the user's OWN tasks (their personal buckets) - it does not pull in other members' tasks from shared projects; to list a shared project's tasks (all members) use search_tasks with that projectId. Status semantics: `inbox` = unsorted captures, `today` = scheduled for today, `later` = scheduled for a future date (tomorrow, in_n_days, next_week have an explicit horizon_target_date; someday has none), `delegated` = handed off (see follow_up_at), `done` = completed, `archived` = soft-deleted. With NO `status`/`statuses`, returns all OPEN tasks (inbox + today + later + delegated; done/archived excluded) - so 'my tasks' is never just the inbox. Pass `statuses: string[]` to combine specific ones, e.g. ['today','later']; or a single `status` to narrow.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -177,6 +192,17 @@
           },
           "description": "Array of statuses. Use this instead of `status` to fetch multiple in one call."
         },
+        "project": {
+          "type": "string",
+          "description": "Filter to a project by NAME (case-sensitive, same matching as the #shorthand) - e.g. 'taskpile' lists that project's tasks. Resolved server-side; errors if the name is unknown or matches more than one project. Mutually exclusive with projectId. Note: this still lists only YOUR tasks in that project - use search_tasks to see all members' tasks in a shared one."
+        },
+        "projectId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Filter to a project by id. Pass null for tasks with no project. Mutually exclusive with `project`."
+        },
         "limit": {
           "type": "number",
           "description": "Max results (default 100, max 500)."
@@ -202,6 +228,10 @@
               "id": {
                 "type": "string",
                 "description": "Task id (UUID)."
+              },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
               },
               "user_id": {
                 "type": "string",
@@ -252,6 +282,17 @@
                   "null"
                 ]
               },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
+              },
               "delegated_to": {
                 "type": [
                   "string",
@@ -294,7 +335,7 @@
   },
   {
     "name": "get_task",
-    "description": "Fetch a single task by id with full shape including notes and tags.",
+    "description": "Fetch a single task by id with full shape including notes and tags. Resolves the caller's own tasks and any task in a project shared with them (so a task surfaced by search can be opened).",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -314,6 +355,10 @@
         "id": {
           "type": "string",
           "description": "Task id (UUID)."
+        },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
         },
         "user_id": {
           "type": "string",
@@ -364,6 +409,17 @@
             "null"
           ]
         },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
+        },
         "delegated_to": {
           "type": [
             "string",
@@ -405,7 +461,7 @@
   },
   {
     "name": "update_task",
-    "description": "Edit an existing task. Any field omitted is left unchanged. Pass `notes` (markdown) for the description body, or `notes: null` to clear. Pass `projectId: null` to clear the project, or a uuid to set/move it (the project must already exist - use list_projects). `#project`/`@tag` shorthand in `title` is NOT parsed on update (unlike create_task) - to change tags use `tags`/`addTags`/`removeTags`, to change project use `projectId`. Tag fields are exclusive: pass `tags` to replace the entire tag list, or `addTags`/`removeTags` for delta updates, not both. Status lets you move a task between buckets without delegating or completing - to mark a task done use `complete_task`, to schedule use `assign_horizon`.",
+    "description": "Edit an existing task. Any field omitted is left unchanged. Pass `notes` (markdown) for the description body, or `notes: null` to clear. Pass `projectId: null` to clear the project, or a uuid to set/move it (the project must already exist - use list_projects; it may be one shared with you, and viewer access is rejected). When `projectId` is set the response carries a `project` object ({id,name,shared,role,member_count}) so you can confirm a shared destination to the user. `#project`/`@tag` shorthand in `title` is NOT parsed on update (unlike create_task) - to change tags use `tags`/`addTags`/`removeTags`, to change project use `projectId`. Tag fields are exclusive: pass `tags` to replace the entire tag list, or `addTags`/`removeTags` for delta updates, not both. Status lets you move a task between buckets without delegating or completing - to mark a task done use `complete_task`, to schedule use `assign_horizon`.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -477,6 +533,10 @@
             "type": "string"
           },
           "description": "Tags to remove. Mutually exclusive with `tags`."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Toggle whether a push fires at the task's horizon time. Does not change the horizon itself - use `assign_horizon` to (re)schedule. Disabling never un-fires an already-sent notification, and enabling a task that already fired won't make it fire again."
         }
       },
       "required": [
@@ -490,6 +550,10 @@
         "id": {
           "type": "string",
           "description": "Task id (UUID)."
+        },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
         },
         "user_id": {
           "type": "string",
@@ -539,6 +603,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -604,6 +679,10 @@
           "type": "string",
           "description": "Task id (UUID)."
         },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+        },
         "user_id": {
           "type": "string",
           "description": "Owning user id."
@@ -652,6 +731,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -717,6 +807,10 @@
           "type": "string",
           "description": "Task id (UUID)."
         },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+        },
         "user_id": {
           "type": "string",
           "description": "Owning user id."
@@ -765,6 +859,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -865,6 +970,10 @@
           "type": "string",
           "description": "Task id (UUID)."
         },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+        },
         "user_id": {
           "type": "string",
           "description": "Owning user id."
@@ -913,6 +1022,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -978,6 +1098,10 @@
           "type": "string",
           "description": "Task id (UUID)."
         },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+        },
         "user_id": {
           "type": "string",
           "description": "Owning user id."
@@ -1027,6 +1151,17 @@
             "null"
           ]
         },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
+        },
         "delegated_to": {
           "type": [
             "string",
@@ -1070,7 +1205,7 @@
   },
   {
     "name": "list_projects",
-    "description": "List the user's projects with task counts. Active by default - pass includeArchived=true to also surface archived projects.",
+    "description": "List every project the user can reach - ones they own AND ones shared with them (project invitation or team) - with task counts. Each row carries `shared`, `role`, `member_count` and a `capabilities` object (e.g. `can_add_tasks`) so you can distinguish a private project from a shared one of the same name, pick the right `projectId` for a write, and know up front whether a write will be allowed. Active by default - pass includeArchived=true to also surface archived projects.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1087,11 +1222,11 @@
     },
     "outputSchema": {
       "type": "object",
-      "description": "Projects with attached task_count.",
+      "description": "Projects the user owns or is a member of, with task_count and sharing info.",
       "properties": {
         "results": {
           "type": "array",
-          "description": "Projects with attached task_count.",
+          "description": "Projects the user owns or is a member of, with task_count and sharing info.",
           "items": {
             "type": "object",
             "properties": {
@@ -1151,6 +1286,33 @@
               "task_count": {
                 "type": "number",
                 "description": "Active task count in the project."
+              },
+              "shared": {
+                "type": "boolean",
+                "description": "True when the project is shared (team project or more than one member)."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "editor",
+                  "viewer"
+                ],
+                "description": "The caller's role in this project. Viewers cannot add or move tasks."
+              },
+              "member_count": {
+                "type": "number",
+                "description": "Number of members (owner included)."
+              },
+              "capabilities": {
+                "type": "object",
+                "description": "Self-describing permissions derived from role, so you don't have to map role->permission yourself or attempt a write to discover it.",
+                "properties": {
+                  "can_add_tasks": {
+                    "type": "boolean",
+                    "description": "Whether the caller may add or move tasks into this project."
+                  }
+                }
               }
             }
           }
@@ -1632,7 +1794,7 @@
   },
   {
     "name": "search_tasks",
-    "description": "Search the user's tasks with rich filters. `query` is a case-insensitive substring matched against title and (when includeBody=true) notes. Additional filters narrow the result set further; all are AND-combined. Omit `query` to filter purely by metadata. Archived tasks are excluded by default - pass includeArchived=true to include them.",
+    "description": "Search across every task the user can read: their own tasks PLUS tasks other members added to projects shared with them. `query` is a case-insensitive substring matched against title and (when includeBody=true) notes. Additional filters narrow the result set further; all are AND-combined. Filtering by `projectId` on a shared project returns every member's tasks in it. Omit `query` to filter purely by metadata. Archived tasks are excluded by default - pass includeArchived=true to include them. Note: the `tags` filter only matches the caller's own tags, so it won't surface other members' tasks by tag.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1651,12 +1813,16 @@
           },
           "description": "Filter to tasks that have ALL of these tag names."
         },
+        "project": {
+          "type": "string",
+          "description": "Filter to a project by NAME (case-sensitive, same matching as the #shorthand) - e.g. 'taskpile'. Resolved server-side; errors if unknown or ambiguous. Mutually exclusive with projectId."
+        },
         "projectId": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Filter to tasks in this project. Pass null for tasks without a project."
+          "description": "Filter to tasks in this project by id. Pass null for tasks without a project. Mutually exclusive with `project`."
         },
         "horizons": {
           "type": "array",
@@ -1727,6 +1893,10 @@
                 "type": "string",
                 "description": "Task id (UUID)."
               },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+              },
               "user_id": {
                 "type": "string",
                 "description": "Owning user id."
@@ -1776,6 +1946,17 @@
                   "null"
                 ]
               },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
+              },
               "delegated_to": {
                 "type": [
                   "string",
@@ -1818,7 +1999,7 @@
   },
   {
     "name": "assign_horizon",
-    "description": "Set when a task should be done. Pass EITHER `horizon` (named bucket) OR `date` (explicit ISO date like '2026-05-20') - not both. Named buckets: `today_morning/afternoon/evening` → Today; `tomorrow`/`in_n_days`/`next_week`/`someday` → Later with the corresponding date. Explicit `date` resolves to today/in_n_days automatically (avoids LLM date arithmetic). Pass inNDays to override the user's default for the `in_n_days` bucket.",
+    "description": "Set when a task should be done. Pass EITHER `horizon` (named bucket) OR `date` (explicit ISO date like '2026-05-20') - not both. Named buckets: `today_morning/afternoon/evening` → Today; `tomorrow`/`in_n_days`/`next_week`/`someday` → Later with the corresponding date. Explicit `date` resolves to today/in_n_days automatically (avoids LLM date arithmetic). Pass inNDays to override the user's default for the `in_n_days` bucket. Pass `atTime` (HH:MM) to fire at a specific wall-clock time instead of the bucket's slot hour. Pass `notify` to override whether a push fires at the horizon's wall-clock time; default follows the user's notify_on_horizon_default setting the first time a horizon is set on the task.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1846,6 +2027,10 @@
         "inNDays": {
           "type": "number",
           "description": "Override the user's default for the `in_n_days` bucket."
+        },
+        "atTime": {
+          "type": "string",
+          "description": "Optional wall-clock time override in the user's timezone, formatted HH:MM (24h, e.g. '14:30'). Overrides the bucket's default slot hour, so the push fires at this exact time on the horizon's date. Omit to use the slot hour (morning/afternoon/evening or the morning hour for future buckets)."
         }
       },
       "required": [
@@ -1859,6 +2044,10 @@
         "id": {
           "type": "string",
           "description": "Task id (UUID)."
+        },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
         },
         "user_id": {
           "type": "string",
@@ -1908,6 +2097,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -1982,6 +2182,10 @@
           "type": "string",
           "description": "Task id (UUID)."
         },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+        },
         "user_id": {
           "type": "string",
           "description": "Owning user id."
@@ -2031,6 +2235,17 @@
             "null"
           ]
         },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
+        },
         "delegated_to": {
           "type": [
             "string",
@@ -2074,7 +2289,7 @@
   },
   {
     "name": "move_to_project",
-    "description": "Bulk-assign a list of task ids to a project. Pass projectId: null to clear the project. The project must already exist (use list_projects).",
+    "description": "Bulk-assign a list of task ids to a project. Pass projectId: null to clear the project. The project must already exist (use list_projects) and may be one shared with you - viewer access is rejected. The response includes a `project` object ({id,name,shared,role,member_count}, or null) so you can confirm a shared destination to the user. Only the caller's own tasks are moved.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2102,9 +2317,18 @@
       "type": "object",
       "description": "Bulk result.",
       "properties": {
-        "updated": {
+        "ok": {
+          "type": "boolean"
+        },
+        "moved": {
           "type": "number",
           "description": "Number of tasks moved."
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -2193,6 +2417,44 @@
     }
   },
   {
+    "name": "bulk_archive",
+    "description": "Soft-delete several tasks in one round-trip by moving them to status='archived'. The recommended bulk cleanup - reversible (unarchive_task) and preferred over bulk_delete. Already-archived ids are skipped, so the count reflects real transitions. Capped at 200 ids per call.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "taskIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 200,
+          "description": "Task ids to archive (1-200)."
+        }
+      },
+      "required": [
+        "taskIds"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Bulk result.",
+      "properties": {
+        "archived": {
+          "type": "number",
+          "description": "Number of tasks archived."
+        }
+      }
+    },
+    "annotations": {
+      "title": "Archive tasks (bulk)",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
     "name": "bulk_assign_horizon",
     "description": "Set the same horizon on several tasks in one round-trip. Same horizon/date semantics as `assign_horizon` - pass either `horizon` or `date`, not both.",
     "inputSchema": {
@@ -2253,7 +2515,7 @@
   },
   {
     "name": "get_today",
-    "description": "One-shot read of everything that should land on the user's Today screen: overdue tasks (horizon_target_date in the past), today's scheduled tasks, delegated tasks with due follow-ups, and tasks completed today. Saves the three or four round-trips an agent would otherwise need to assemble this view. Returns { overdue, today, followUp, completedToday }.",
+    "description": "One-shot read of everything that should land on the user's Today screen: overdue tasks (a committed today task whose day has passed), today's committed tasks, scheduled tasks whose planned day has arrived (NOT auto-committed - they resurface for a review decision so a parked batch doesn't flood Today), delegated tasks with due follow-ups, and tasks completed today. Saves the three or four round-trips an agent would otherwise need to assemble this view. Returns { overdue, today, scheduled, followUp, completedToday }.",
     "inputSchema": {
       "type": "object",
       "properties": {}
@@ -2271,6 +2533,10 @@
               "id": {
                 "type": "string",
                 "description": "Task id (UUID)."
+              },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
               },
               "user_id": {
                 "type": "string",
@@ -2320,6 +2586,17 @@
                   "string",
                   "null"
                 ]
+              },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
               },
               "delegated_to": {
                 "type": [
@@ -2365,6 +2642,10 @@
                 "type": "string",
                 "description": "Task id (UUID)."
               },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+              },
               "user_id": {
                 "type": "string",
                 "description": "Owning user id."
@@ -2413,6 +2694,125 @@
                   "string",
                   "null"
                 ]
+              },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
+              },
+              "delegated_to": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "follow_up_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completed_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tag names attached to the task."
+              }
+            }
+          }
+        },
+        "scheduled": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A Taskpile task row.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Task id (UUID)."
+              },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+              },
+              "user_id": {
+                "type": "string",
+                "description": "Owning user id."
+              },
+              "title": {
+                "type": "string"
+              },
+              "body_md": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Markdown notes/body."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inbox",
+                  "today",
+                  "later",
+                  "delegated",
+                  "done",
+                  "archived"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "assignee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_horizon": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
               },
               "delegated_to": {
                 "type": [
@@ -2458,6 +2858,10 @@
                 "type": "string",
                 "description": "Task id (UUID)."
               },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+              },
               "user_id": {
                 "type": "string",
                 "description": "Owning user id."
@@ -2506,6 +2910,17 @@
                   "string",
                   "null"
                 ]
+              },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
               },
               "delegated_to": {
                 "type": [
@@ -2551,6 +2966,10 @@
                 "type": "string",
                 "description": "Task id (UUID)."
               },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+              },
               "user_id": {
                 "type": "string",
                 "description": "Owning user id."
@@ -2599,6 +3018,17 @@
                   "string",
                   "null"
                 ]
+              },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
               },
               "delegated_to": {
                 "type": [
@@ -2644,7 +3074,7 @@
   },
   {
     "name": "get_review_queue",
-    "description": "Return tasks waiting to be triaged - inbox captures (no horizon assigned). Use this to drive a daily-review flow. Returns { inbox, count }.",
+    "description": "Return tasks waiting to be triaged - the review pile, everything whose review date has arrived: fresh inbox captures (no horizon), scheduled tasks whose parked day has landed, and yesterday's un-touched committed-today tasks (a horizon is a 'review me again on this date' marker, not a deadline). Mirrors the /inbox + /review screens. Future-parked, someday, delegated and done tasks are excluded. Note: a resurfaced task still carries its old status (later/today) until you act on it - membership here is derived from the date, not the stored status. Use this to drive a daily-review flow. Read-only tasks (viewer on a shared project) are excluded since no triage action would be allowed on them. Returns { inbox, count }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2667,6 +3097,10 @@
               "id": {
                 "type": "string",
                 "description": "Task id (UUID)."
+              },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
               },
               "user_id": {
                 "type": "string",
@@ -2716,6 +3150,17 @@
                   "string",
                   "null"
                 ]
+              },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
               },
               "delegated_to": {
                 "type": [
@@ -2816,6 +3261,10 @@
                 "type": "string",
                 "description": "Task id (UUID)."
               },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+              },
               "user_id": {
                 "type": "string",
                 "description": "Owning user id."
@@ -2865,6 +3314,17 @@
                   "null"
                 ]
               },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
+              },
               "delegated_to": {
                 "type": [
                   "string",
@@ -2907,7 +3367,7 @@
   },
   {
     "name": "set_recurrence",
-    "description": "Set or clear a task's repeat rule. Pass rule: null to make the task non-recurring. For weekly, `weekdays` is an array of 0-6 (Sun=0). When a recurring task is completed, the next instance is auto-created.",
+    "description": "Set or clear a task's repeat rule. Pass rule: null to make the task non-recurring. For weekly, `weekdays` is an array of ISO 8601 weekdays where 1=Monday and 7=Sunday. For monthly nth-weekday patterns (\"last Friday\", \"second Wednesday\"), combine `set_pos` (1..4 for nth, -1 for last) with a single-entry `weekdays`. End conditions: `until: YYYY-MM-DD` stops spawning past that date; `count: N` limits the total number of remaining occurrences (including the current task). When a recurring task is completed, the next instance is auto-created if neither end condition is exhausted.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2940,14 +3400,37 @@
                   "type": "array",
                   "items": {
                     "type": "number",
-                    "minimum": 0,
-                    "maximum": 6
-                  }
+                    "minimum": 1,
+                    "maximum": 7
+                  },
+                  "description": "ISO 8601 weekdays: 1=Monday … 7=Sunday."
                 },
                 "day_of_month": {
                   "type": "number",
                   "minimum": 1,
                   "maximum": 31
+                },
+                "set_pos": {
+                  "type": "number",
+                  "description": "Monthly nth-weekday: 1..4 for first..fourth, -1 for last. Combined with weekdays.",
+                  "enum": [
+                    -1,
+                    1,
+                    2,
+                    3,
+                    4
+                  ]
+                },
+                "until": {
+                  "type": "string",
+                  "description": "End condition: stop spawning past this calendar date (YYYY-MM-DD, inclusive).",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "count": {
+                  "type": "number",
+                  "description": "End condition: remaining occurrences including the current task. Each completion decrements this on the next instance; spawning stops when count reaches 1.",
+                  "minimum": 1,
+                  "maximum": 9999
                 }
               },
               "required": [
@@ -2969,6 +3452,10 @@
         "id": {
           "type": "string",
           "description": "Task id (UUID)."
+        },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
         },
         "user_id": {
           "type": "string",
@@ -3018,6 +3505,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -3169,6 +3667,63 @@
       "title": "Configure morning digest",
       "readOnlyHint": false,
       "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_archived_retention",
+    "description": "Read the user's auto-delete policy for archived tasks. Returns `days`: 0 = never auto-delete (the default); a positive N = archived tasks are permanently deleted N days after they were archived. Use this before changing it via configure_archived_retention.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Archived-task retention policy.",
+      "properties": {
+        "days": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "annotations": {
+      "title": "Get archived-task retention",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "configure_archived_retention",
+    "description": "Set how long archived tasks are kept before they are permanently deleted. `days: 0` turns auto-delete off (never). A positive N permanently deletes any archived task whose archive date is older than N days, enforced by a daily job. Only archived tasks are affected - active and done tasks are never touched. This causes permanent data loss once a window elapses, so confirm the value with the user first.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3650,
+          "description": "Retention window in days. 0 = never auto-delete. Common choices: 30, 90, 365. Max 3650 (10 years)."
+        }
+      },
+      "required": [
+        "days"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Updated retention policy.",
+      "properties": {
+        "days": {
+          "type": "number"
+        }
+      }
+    },
+    "annotations": {
+      "title": "Configure archived-task retention",
+      "readOnlyHint": false,
+      "destructiveHint": true,
       "idempotentHint": true,
       "openWorldHint": false
     }
@@ -3820,6 +4375,97 @@
     }
   },
   {
+    "name": "list_received_invitations",
+    "description": "List pending invitations addressed to the authenticated user (both team and project invitations), so an agent can surface them and accept on the user's behalf. Each entry includes the project/team name, the inviter's email, the role, and an `id` to pass to accept_invitation. Excludes already-accepted and expired invitations. This is the only way to discover an invitation you RECEIVED - list_invitations is team-scoped and shows invitations a team admin SENT.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "List received invitations",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Pending invitations addressed to the caller.",
+      "properties": {
+        "results": {
+          "type": "array",
+          "description": "Pending invitations addressed to the caller.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Pass to accept_invitation as invitationId."
+              },
+              "token": {
+                "type": "string",
+                "description": "Single-use token (also accepted by accept_invitation)."
+              },
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "team",
+                  "project"
+                ]
+              },
+              "team_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Team or project name."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "invited_by": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Inviter user id."
+              },
+              "invited_by_email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
+    }
+  },
+  {
     "name": "revoke_invitation",
     "description": "Delete a pending invitation. Owner only. Has no effect if the invitation has already been accepted.",
     "inputSchema": {
@@ -3856,18 +4502,19 @@
   },
   {
     "name": "accept_invitation",
-    "description": "Accept a team invitation. Validates token + expiry + that the caller's account email matches the invitation. Creates the team_members row and marks the invitation accepted.",
+    "description": "Accept a team OR project invitation. Pass either the single-use `token` from the email, or the `invitationId` from list_received_invitations / get_context (so you can accept on the user's behalf without them pasting a token). Validates expiry + that the caller's account email matches the invitation, then adds them as a member and marks it accepted. The response carries `scope` (team|project) and `name` (the team/project just joined) so you can confirm directly to the user without a follow-up list_projects / list_teams call.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "token": {
           "type": "string",
           "description": "Single-use invitation token from the email."
+        },
+        "invitationId": {
+          "type": "string",
+          "description": "Invitation id (UUID) from list_received_invitations / get_context."
         }
-      },
-      "required": [
-        "token"
-      ]
+      }
     },
     "outputSchema": {
       "type": "object",
@@ -3891,6 +4538,21 @@
             "editor",
             "viewer"
           ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "team",
+            "project"
+          ],
+          "description": "Whether the invitation joined a team or a single project."
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Name of the team/project just joined, so you can confirm it to the user without a follow-up lookup."
         }
       }
     },
@@ -4114,6 +4776,10 @@
           "type": "string",
           "description": "Task id (UUID)."
         },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+        },
         "user_id": {
           "type": "string",
           "description": "Owning user id."
@@ -4162,6 +4828,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -4327,6 +5004,10 @@
           "type": "string",
           "description": "Task id (UUID)."
         },
+        "editable": {
+          "type": "boolean",
+          "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+        },
         "user_id": {
           "type": "string",
           "description": "Owning user id."
@@ -4375,6 +5056,17 @@
             "string",
             "null"
           ]
+        },
+        "horizon_target_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Whether a push notification fires at horizon_target_at."
         },
         "delegated_to": {
           "type": [
@@ -4586,6 +5278,55 @@
     }
   },
   {
+    "name": "request_project_edit_access",
+    "description": "Ask a shared project's owner for edit access. Caller must currently be a read-only viewer of the project. Notifies the owner by email (deduped to once an hour); the owner grants access by switching the caller's role to editor. Rate-limited per requester (a few per project per hour, and a modest global cap) - do not call in a loop; one request is enough.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "Project id (UUID) you currently have viewer access to."
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "requested": {
+          "type": "boolean"
+        },
+        "email_status": {
+          "type": "object",
+          "properties": {
+            "sent": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sent"
+          ]
+        }
+      },
+      "required": [
+        "requested",
+        "email_status"
+      ]
+    },
+    "annotations": {
+      "title": "Request project edit access",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
     "name": "list_project_members",
     "description": "List people with access to a shared project, including their role (owner/editor/viewer), display_name, email, and is_me flag. Caller must be a member.",
     "inputSchema": {
@@ -4776,6 +5517,10 @@
                 "type": "string",
                 "description": "Task id (UUID)."
               },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the caller may write this task (own it AND not a viewer of its project). False = read-only for you; skip write tools."
+              },
               "user_id": {
                 "type": "string",
                 "description": "Owning user id."
@@ -4824,6 +5569,17 @@
                   "string",
                   "null"
                 ]
+              },
+              "horizon_target_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Absolute UTC instant the horizon resolves to (date + wall-clock time)."
+              },
+              "notify": {
+                "type": "boolean",
+                "description": "Whether a push notification fires at horizon_target_at."
               },
               "delegated_to": {
                 "type": [
@@ -4987,6 +5743,102 @@
     },
     "annotations": {
       "title": "Who am I",
+      "readOnlyHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_context",
+    "description": "One-shot orientation snapshot so you don't need list_projects + list_tags + list_tasks + an invitations probe on every turn. Returns: `projects` (everything the user can reach, each with shared/role/member_count), `tags` (names), `inbox` and `today` (true `count` + a compact list of up to 100 tasks each with id/title/status/project_name/time_horizon/horizon_target_date/horizon_target_at), and `received_invitations` (pending invitations addressed to the user, with count + id/scope/name/role/inviter - surface these and offer to accept via accept_invitation). `inbox` is the review pile (captures + scheduled tasks whose day has arrived + yesterday's un-touched committed-today), date-derived to match the /inbox screen - a resurfaced task still reads status later/today until acted on, so check `status`. `today` is only what was deliberately placed there today (slipped tasks move to the inbox pile, not here). inbox/today are the user's own tasks; use search_tasks to see a shared project's full task list.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "Projects, tags, inbox/today snapshot, and pending invitations.",
+      "properties": {
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "shared": {
+                "type": "boolean"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "editor",
+                  "viewer"
+                ]
+              },
+              "member_count": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inbox": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "description": "True total (the task list is capped at 100)."
+            },
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "today": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number"
+            },
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "received_invitations": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number"
+            },
+            "invitations": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "annotations": {
+      "title": "Get context",
       "readOnlyHint": true,
       "openWorldHint": false
     }

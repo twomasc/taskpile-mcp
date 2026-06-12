@@ -3,7 +3,7 @@
   "mcpServers": {
     "taskpile": {
       "url": "https://taskpile.app/api/mcp",
-      "description": "AI-first task manager. Capture, sort, and finish tasks through any MCP-compatible chat client. 57 tools covering task CRUD, projects, tags, teams, bulk operations, morning digest, plus ChatGPT search/fetch built-ins."
+      "description": "AI-first task manager. Capture, sort, and finish tasks through any MCP-compatible chat client. 63 tools covering task CRUD, projects, tags, teams, bulk operations, morning digest, plus ChatGPT search/fetch built-ins."
     }
   }
 }
